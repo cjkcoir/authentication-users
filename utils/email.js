@@ -27,6 +27,7 @@ const sendEmail = async (option) => {
     from: "Proacademy Chella customer Support j.chellakarthikeyan@gmail.com",
     to: option.email,
     subject: option.subject,
+    html: option.message,
     text: option.message,
   };
 

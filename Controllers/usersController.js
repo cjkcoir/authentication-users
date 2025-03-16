@@ -116,3 +116,21 @@ exports.updateMe = async (req, res, next) => {
     });
   }
 };
+
+exports.deleteMe = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming req.user is populated with the authenticated user's info
+
+    await User.findByIdAndDelete(userId);
+
+    res.status(204).json({
+      status: "success",
+      data: null,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};

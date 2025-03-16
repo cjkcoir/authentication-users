@@ -214,12 +214,23 @@ exports.forgotPassword = async (req, res, next) => {
 
     //3.SEND THE TOKEN BACK TO THE USER EMAIL
 
-    const resetUrl = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/users/resetPassword/${resetToken}`;
+    // const resetUrl = `${req.protocol}://${req.get(
+    //   "host"
+    // )}/api/v1/users/resetPassword/${resetToken}`;
 
-    const message = `We have receieved the password reset request,Please use the below link to reset your password\n\n${resetUrl}\n\nThis Reset Password LINK will be valid for 10 MINUTES`;
+    // const resetUrl = `${req.protocol}://${req.get(
+    //   "host"
+    // )}/resetPassword/${resetToken}`;
 
+    const resetUrl = `http://localhost:5173/resetPassword/${resetToken}`;
+
+    // const message = `We have receieved the password reset request,Please use the below link to reset your password\n\n${resetUrl}\n\nThis Reset Password LINK will be valid for 10 MINUTES`;
+
+    const message = `
+      <p>We have received a password reset request. Please use the link below to reset your password:</p>
+      <a href="${resetUrl}" target="_blank">Reset Password</a>
+      <p>This Reset Password LINK will be valid for 10 MINUTES.</p>
+    `;
     try {
       await sendEmail({
         email: user.email,
@@ -250,41 +261,101 @@ exports.forgotPassword = async (req, res, next) => {
   }
 };
 
+// exports.resetPassword = async (req, res, next) => {
+//   try {
+//     const token = crypto
+//       .createHash("sha256")
+//       .update(req.params.token)
+//       .digest("hex");
+
+//     console.log("Hashed token:", token);
+
+//     const user = await User.findOne({
+//       passwordResetToken: token,
+//       passwordResetTokenExpires: { $gt: Date.now() },
+//     });
+
+//     if (!user) {
+//       return res.status(400).json({
+//         status: "Reset Password Fail",
+//         message: "Token is Invalid or It has Expired",
+//       });
+//     }
+//     user.password = req.body.password;
+//     user.confirmpassword = req.body.confirmpassword;
+//     user.passwordResetToken = undefined;
+//     user.passwordResetTokenExpires = undefined;
+//     user.passwordChangedAt = Date.now();
+//     await user.save();
+
+//     const loginToken = signToken(user._id);
+
+//     res.status(200).json({
+//       status: "Reset password Success",
+//       LoginToken: loginToken,
+//       user,
+//     });
+//   } catch (error) {
+//     res.status(400).json({
+//       status: "Fail",
+//       message: error.message,
+//     });
+//   }
+// };
+
 exports.resetPassword = async (req, res, next) => {
   try {
+    // Hash the token received in the URL
     const token = crypto
       .createHash("sha256")
       .update(req.params.token)
       .digest("hex");
+
+    // Log the hashed token for debugging
+    console.log("Hashed token:", token);
+
+    // Find the user based on the hashed token and check if the token has not expired
     const user = await User.findOne({
       passwordResetToken: token,
       passwordResetTokenExpires: { $gt: Date.now() },
     });
 
+    // If no user is found, log the error and return a response
     if (!user) {
+      console.log("Token is invalid or has expired");
       return res.status(400).json({
         status: "Reset Password Fail",
         message: "Token is Invalid or It has Expired",
       });
     }
+
+    // Update the user's password and other related fields
     user.password = req.body.password;
     user.confirmpassword = req.body.confirmpassword;
     user.passwordResetToken = undefined;
     user.passwordResetTokenExpires = undefined;
     user.passwordChangedAt = Date.now();
+
+    // Save the updated user to the database
     await user.save();
 
+    // Generate a new JWT token for the user
     const loginToken = signToken(user._id);
 
+    // Return a success response with the new token
     res.status(200).json({
       status: "Reset password Success",
       LoginToken: loginToken,
       user,
     });
   } catch (error) {
+    // Log the error for debugging
+    console.error("Error during password reset:", error);
+    // Return an error response
     res.status(400).json({
       status: "Fail",
-      message: error.message,
+      message:
+        error.message || "An error occurred while resetting the password",
     });
   }
 };
