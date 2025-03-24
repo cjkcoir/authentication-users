@@ -134,3 +134,27 @@ exports.deleteMe = async (req, res) => {
     });
   }
 };
+
+//get    http://127.0.0.1:5000/api/v1/users
+exports.getAllUsers = async (req, res) => {
+  try {
+    // Retrieve all users from the database
+    const users = await User.find();
+
+    // Send a success response with the list of users
+    res.status(200).json({
+      status: "success",
+      results: users.length, // To include the count of users
+      data: {
+        users, // Sending the list of users
+      },
+    });
+  } catch (error) {
+    // Handle errors and send a fail response
+    res.status(500).json({
+      status: "fail",
+      message: "An error occurred while fetching users",
+      error: error.message,
+    });
+  }
+};

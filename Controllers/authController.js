@@ -17,6 +17,7 @@ const signToken = (id) => {
 };
 
 // Handler to create a new user
+//http://127.0.0.1:5000/api/v1/auth/signup
 exports.signUp = async (req, res) => {
   try {
     const {

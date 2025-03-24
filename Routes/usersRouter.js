@@ -14,6 +14,10 @@ router
 
 router.patch("/resetPassword/:token", authController.resetPassword);
 
+//deleteUser http://127.0.0.1:5000/api/v1/users/deleteMe
 router.delete("/deleteMe", authController.protect, usersController.deleteMe);
+
+//get    http://127.0.0.1:5000/api/v1/users
+router.route("/").get(usersController.getAllUsers);
 
 module.exports = router;
